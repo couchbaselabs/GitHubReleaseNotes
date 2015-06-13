@@ -91,9 +91,9 @@ namespace ReleaseNotesCompiler
 
         void AddIssues(StringBuilder stringBuilder, List<Issue> issues)
         {
-            Append(issues, "Feature", stringBuilder);
-            Append(issues, "Improvement", stringBuilder);
-            Append(issues, "Bug", stringBuilder);
+            Append(issues, "performance", stringBuilder);
+            Append(issues, "enhancement", stringBuilder);
+            Append(issues, "bug", stringBuilder);
         }
 
         static async Task AddFooter(StringBuilder stringBuilder)
@@ -108,7 +108,7 @@ namespace ReleaseNotesCompiler
             if (!file.Exists)
             {
                 stringBuilder.Append(@"## Where to get it
-You can download this release from [nuget](https://www.nuget.org/profiles/nservicebus/)");
+You can download this release from [Couchbase.com](http://www.couchbase.com/nosql-databases/downloads#Couchbase_Mobile)");
                 return;
             }
 
@@ -126,25 +126,18 @@ You can download this release from [nuget](https://www.nuget.org/profiles/nservi
         async Task<List<Issue>> GetIssues(Milestone milestone)
         {
             var issues = await gitHubClient.GetIssues(milestone);
-            foreach (var issue in issues)
-            {
-                CheckForValidLabels(issue);
-            }
-            return issues;
+            return issues.Where(CheckForValidLabels).ToList();
         }
 
-        static void CheckForValidLabels(Issue issue)
+        static bool CheckForValidLabels(Issue issue)
         {
             var count = issue.Labels.Count(l =>
-                l.Name == "Bug" ||
-                l.Name == "Internal refactoring" ||
-                l.Name == "Feature" ||
-                l.Name == "Improvement");
-            if (count != 1)
-            {
-                var message = string.Format("Bad Issue {0} expected to find a single label with either 'Bug', 'Internal refactoring', 'Improvement' or 'Feature'.", issue.HtmlUrl);
-                throw new Exception(message);
-            }
+                l.Name == "bug" ||
+                l.Name == "enhancement" ||
+                l.Name == "chore" ||
+                l.Name == "performance"
+                );
+            return count > 0 && !issue.IsPullRequest();
         }
 
         void Append(IEnumerable<Issue> issues, string label, StringBuilder stringBuilder)
