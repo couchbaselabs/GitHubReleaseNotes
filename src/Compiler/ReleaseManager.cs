@@ -25,8 +25,12 @@ namespace ReleaseNotesCompiler
             var releases = new List<ReleaseUpdateRequired>();
 
             foreach (var repository in repositories.Where(r =>
-                r.Name != "NServiceBus" &&  //until we can patch octokit
-                r.Name != "ServiceInsight" && //until we can patch octokit
+                r.Name != "couchbase-lite-net" &&  //until we can patch octokit
+                r.Name != "couchbase-lite-ios" && //until we can patch octokit
+                r.Name != "couchbase-lite-java-core" && //until we can patch octokit
+                r.Name != "couchbase-lite-java" && //until we can patch octokit
+                r.Name != "couchbase-lite-android" && //until we can patch octokit
+                r.Name != "sync_gateway" && //until we can patch octokit
                 r.HasIssues))
             {
                 Console.Out.WriteLine("Checking " + repository.Name);
@@ -107,7 +111,7 @@ namespace ReleaseNotesCompiler
         async Task<List<Milestone>> GetMilestones(string repository)
         {
             var milestonesClient = gitHubClient.Issue.Milestone;
-            var openList = await milestonesClient.GetForRepository(organization, repository, new MilestoneRequest { State = ItemState.Open });
+            var openList = await milestonesClient.GetAllForRepository(organization, repository, new MilestoneRequest { State = ItemState.Open });
 
             return openList.ToList();
         }

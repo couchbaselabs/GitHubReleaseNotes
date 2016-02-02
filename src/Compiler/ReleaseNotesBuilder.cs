@@ -91,9 +91,10 @@ namespace ReleaseNotesCompiler
 
         void AddIssues(StringBuilder stringBuilder, List<Issue> issues)
         {
-            Append(issues, "performance", stringBuilder);
-            Append(issues, "enhancement", stringBuilder);
-            Append(issues, "bug", stringBuilder);
+            Append(issues.Where(i => i.State == ItemState.Closed), "performance", "Performance Improvements", stringBuilder);
+            Append(issues.Where(i => i.State == ItemState.Closed), "enhancement", "Enhancements", stringBuilder);
+            Append(issues.Where(i => i.State == ItemState.Closed), "bug", "Bugs", stringBuilder);
+            Append(issues.Where(i => i.State == ItemState.Open), "known-issue", "Known Issues", stringBuilder);
         }
 
         static async Task AddFooter(StringBuilder stringBuilder)
@@ -131,26 +132,36 @@ You can download this release from [Couchbase.com](http://www.couchbase.com/nosq
 
         static bool CheckForValidLabels(Issue issue)
         {
-            var count = issue.Labels.Count(l =>
-                l.Name == "bug" ||
-                l.Name == "enhancement" ||
-                l.Name == "chore" ||
-                l.Name == "performance"
-                );
+            var count = 0;
+            foreach(var l in issue.Labels)
+            {
+                if (l.Name == "chore")
+                {
+                    return false;
+                }
+               else if (l.Name == "bug" ||
+                    l.Name == "enhancement" ||
+                    l.Name == "known-issue" ||
+                    l.Name == "performance")
+                {
+                    count++;
+                }
+            }
             return count > 0 && !issue.IsPullRequest();
         }
 
-        void Append(IEnumerable<Issue> issues, string label, StringBuilder stringBuilder)
+        static void Append(IEnumerable<Issue> issues, string label, string pluralizedLabel, StringBuilder stringBuilder)
         {
-            var features = issues.Where(x => x.Labels.Any(l => l.Name == label))
+            var features = issues
+                .Where(x => x.Labels.Any(l => l.Name == label))
                 .ToList();
             if (features.Count > 0)
             {
-                stringBuilder.AppendFormat(features.Count == 1 ? "__{0}__\r\n" : "__{0}s__\r\n", label);
+                stringBuilder.AppendFormat("__{0}__\r\n", pluralizedLabel);
 
                 foreach (var issue in features)
                 {
-                    stringBuilder.AppendFormat("- [__#{0}__]({1}) {2}\r\n", issue.Number, issue.HtmlUrl, issue.Title);
+                    stringBuilder.AppendFormat("- [__#{0}__]({1}) {2}\r\n", issue.Number, issue.HtmlUrl, issue.Title.Capitalize());
                 }
                 stringBuilder.AppendLine();
             }

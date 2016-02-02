@@ -1,4 +1,7 @@
-﻿namespace ReleaseNotesCompiler.Tests
+﻿using System.Net.Http;
+using ReleaseNotesCompiler.Tests;
+
+namespace ReleaseNotesCompiler.Tests
 {
     using Octokit;
     using Octokit.Internal;
@@ -9,7 +12,7 @@
         {
             var credentialStore = new InMemoryCredentialStore(Helper.Credentials);
 
-            var httpClient = new HttpClientAdapter(Helper.Proxy);
+            var httpClient = new HttpClientAdapter(()=>{ return new HttpClientHandler(); });
 
             var connection = new Connection(
                 new ProductHeaderValue("ReleaseNotesCompiler"),
