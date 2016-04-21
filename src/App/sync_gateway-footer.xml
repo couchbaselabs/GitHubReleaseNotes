@@ -1,0 +1,80 @@
+﻿                <section id="{0}-download">
+                    <title>Download</title>
+                    <body>
+                        <paragraph>You can download this release from
+                            <external-ref href="http://www.couchbase.com/nosql-databases/downloads#Couchbase_Mobile">Couchbase.com</external-ref>
+                        </paragraph>
+                    </body>
+                </section>
+                <section id="{0}-requirements">
+                    <title>System Requirements</title>
+                    <body>
+                        <paragraph>Sync Gateway {1} is compatible with the following editions of Couchbase Server:</paragraph>
+                        <table>
+                            <header>
+                                <row>
+                                    <entry>Sync Gateway</entry>
+                                    <entry>Couchbase Server</entry>
+                                </row>
+                            </header>
+                            <body>
+                                <row>
+                                    <entry>{1}</entry>
+                                    <entry>2.2.x</entry>
+                                </row>
+                                <row>
+                                    <entry>{1}</entry>
+                                    <entry>2.2.x</entry>
+                                </row>
+                                <row>
+                                    <entry>{1}</entry>
+                                    <entry>2.5.x</entry>
+                                </row>
+                                <row>
+                                    <entry>{1}</entry>
+                                    <entry>3.1</entry>
+                                </row>
+                                <row>
+                                    <entry>{1}</entry>
+                                    <entry>4.0</entry>
+                                </row>
+                                <row>
+                                    <entry>{1}</entry>
+                                    <entry>4.1</entry>
+                                </row>
+                            </body>
+                        </table>
+                    </body>
+                </section>
+                <section id="{0}-support">
+                    <title>Support Statement</title>
+                    <body>
+                        <paragraph>Version 1.1 was released in June, 2015. With this release of version {1}, the support window for 1.1 expires in February 2017.</paragraph>
+                        <table>
+                            <header>
+                                <row>
+                                    <entry>Release</entry>
+                                    <entry>Release Date</entry>
+                                    <entry>End of Life Date</entry>
+                                </row>
+                            </header>
+                            <body>
+                                <row>
+                                    <entry>1.0</entry>
+                                    <entry>May 2014</entry>
+                                    <entry>June 2016</entry>
+                                </row>
+                                <row>
+                                    <entry>1.1</entry>
+                                    <entry>June 2015</entry>
+                                    <entry>February 2017</entry>
+                                </row>
+                                <row>
+                                    <entry>1.2</entry>
+                                    <entry>February 2016</entry>
+                                    <entry></entry>
+                                </row>
+                            </body>
+                        </table>
+                    </body>
+                </section>

@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Commandlineparameters>update --exportxml --owner couchbase --repository couchbase-lite-net --targetcommitish release/1.2.1 -u zgramana -p 7158edd61b2dd077d85be91c1a0c049b5ff80b59 -m 1.2.1</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -58,8 +59,22 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="GenerateReleaseNotes.sh" />
     <None Include="UpdateReleaseNotes.sh" />
+    <None Include="sync_gateway-footer.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="couchbase-lite-net-footer.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="couchbase-lite-ios-footer.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="couchbase-lite-java-footer.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="couchbase-lite-android-footer.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Compiler\ReleaseNotesCompiler.csproj">

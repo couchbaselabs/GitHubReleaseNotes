@@ -1,0 +1,112 @@
+﻿                        <section id="{0}-Download">
+                            <title>Download</title>
+                            <body>
+                                <paragraph>You can download this release from nuget.org:</paragraph>
+                                <unordered-list>
+                                    <list-item>
+                                        <strong>
+                                            <external-ref href="https://www.nuget.org/packages/Couchbase.Lite/{1}">Couchbase.Lite</external-ref>
+                                        </strong>
+                                    </list-item>
+                                    <list-item>
+                                        (optional) 
+                                        <strong>
+                                            <external-ref href="https://www.nuget.org/packages/Couchbase.Lite.Listener/{1}">Couchbase.Lite.Listener</external-ref>
+                                        </strong>
+                                    </list-item>
+                                    <list-item>
+                                        (optional) 
+                                        <strong>
+                                            <external-ref href="https://www.nuget.org/packages/Couchbase.Lite.Listener.Bonjour/{1}">Couchbase.Lite.Listener.Bonjour</external-ref>
+                                        </strong>
+                                    </list-item>
+                                    <list-item>
+                                        (optional) 
+                                        <strong> 
+                                            <external-ref href="https://www.nuget.org/packages/Couchbase.Lite.Storage.ForestDB/{1}">Couchbase Lite ForestDB Storage</external-ref>
+                                        </strong>
+                                    </list-item>
+                                    <list-item>
+                                        (optional) 
+                                        <strong>
+                                            <external-ref href="https://www.nuget.org/packages/Couchbase.Lite.Storage.SQLCipher/{1}">Couchbase Lite SQLCipher Storage</external-ref>
+                                        </strong>
+                                    </list-item>
+                                </unordered-list>
+                            </body>
+                        </section>
+                        <section id="{0}-Requirements">
+                            <title>System Requirements</title>
+                            <body>
+                                <h2>Requirements</h2>
+                                <paragraph>Couchbase Lite for .NET {1} is compatible with the following .NET runtimes and operation systems:</paragraph>
+                                <table>
+                                    <header>
+                                        <row>
+                                            <entry>.NET Runtime</entry>
+                                            <entry>OS</entry>
+                                        </row>
+                                    </header>                                
+                                    <body>
+                                        <row>
+                                            <entry>Xamarin</entry>
+                                            <entry>iOS, Android</entry>
+                                        </row>
+                                        <row>
+                                            <entry>Mono (.NET 3.5+)</entry>
+                                            <entry>OS/X, Linux</entry>
+                                        </row>
+                                        <row>
+                                            <entry>Unity 4.6 (Pro)</entry>
+                                            <entry>iOS, Android</entry>
+                                        </row>
+                                        <row>
+                                            <entry>Unity 4.6 (Free and Pro)</entry>
+                                            <entry>Windows Desktop, OS X, Linux</entry>
+                                        </row>
+                                        <row>
+                                            <entry>Unity 5 Personal and Pro</entry>
+                                            <entry>iOS, Android, Windows Desktop, OS/X, Linux</entry>
+                                        </row>
+                                        <row>
+                                            <entry>Microsoft .NET 3.5+</entry>
+                                            <entry>Windows Desktop</entry>
+                                        </row>
+                                    </body>
+                                </table>
+                            </body>
+                        </section>
+                        <section id="{0}-Support">
+                            <title>Support Statement</title>
+                            <body>
+                                <h2>Support Statement</h2>
+                                <paragraph>Version 1.1 was released in June, 2015. With the release of version 1.2, the support window for 1.1 expires in August 2016.</paragraph>
+                                <table>
+                                    <header>
+                                        <row>
+                                            <entry>Release</entry>
+                                            <entry>Release Date</entry>
+                                            <entry>End of Life Date</entry>
+                                        </row>
+                                    </header>
+                                    
+                                    <body>
+                                        <row>
+                                            <entry>1.0</entry>
+                                            <entry>October 2014</entry>
+                                            <entry>December 2015</entry>
+                                        </row>
+                                        <row>
+                                            <entry>1.1</entry>
+                                            <entry>June 2015</entry>
+                                            <entry>August 2016</entry>
+                                        </row>
+                                        <row>
+                                            <entry>1.2</entry>
+                                            <entry>February 2016</entry>
+                                            <entry></entry>
+                                        </row>
+                                    </body>
+                                </table>
+                            </body>
+                        </section>

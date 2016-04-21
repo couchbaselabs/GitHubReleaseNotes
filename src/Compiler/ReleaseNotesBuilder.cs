@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Octokit;
+using MarkdownSharp;
+using System.Diagnostics;
 
 namespace ReleaseNotesCompiler
 {
@@ -26,15 +28,33 @@ namespace ReleaseNotesCompiler
             this.milestoneTitle = milestoneTitle;
         }
 
-        public async Task<string> BuildReleaseNotes()
+        public async Task<Tuple<string,string>> BuildReleaseNotes()
         {
             LoadMilestones();
 
             GetTargetMilestone();
             var issues = await GetIssues(targetMilestone);
-            var stringBuilder = new StringBuilder();
+            var markdownBuilder = new StringBuilder();
+            var xmlBuilder = new StringBuilder();
             var previousMilestone = GetPreviousMilestone();
             var numberOfCommits = await gitHubClient.GetNumberOfCommitsBetween(previousMilestone, targetMilestone);
+            var message = String.Empty;
+
+            if (repository.Equals("sync_gateway"))
+            {
+                xmlBuilder.AppendFormat("          <article id=\"{0}\">\n", this.milestoneTitle); 
+                xmlBuilder.AppendFormat("            <title>{0} {1}</title>\n", this.milestoneTitle, DateTime.UtcNow.ToLongDateString());
+                xmlBuilder.AppendFormat("            <description>{0} Release Notes for Sync Gateway</description>\n", this.milestoneTitle);
+                xmlBuilder.AppendLine  ("            <introduction>");
+            }
+            else
+            {
+                xmlBuilder.AppendFormat("                <topic id=\"{0}\">\n", this.milestoneTitle); 
+                xmlBuilder.AppendFormat("                    <title>{0} {1}</title>\n", this.milestoneTitle, DateTime.UtcNow.ToLongDateString());
+                xmlBuilder.AppendLine  ("                    <body>");
+            }
+
+            var m = new Markdown(new MarkdownOptions { EmptyElementSuffix = " />" });
 
             if (issues.Count > 0)
             {
@@ -45,29 +65,61 @@ namespace ReleaseNotesCompiler
                     var commitsLink = GetCommitsLink(previousMilestone);
                     var commitsText = String.Format(numberOfCommits == 1 ? "{0} commit" : "{0} commits", numberOfCommits);
 
-                    stringBuilder.AppendFormat(@"As part of this release we had [{0}]({1}) which resulted in [{2}]({3}) being closed.", commitsText, commitsLink, issuesText, targetMilestone.HtmlUrl());
+                    message = string.Format(@"As part of this release we had [{0}]({1}) which resulted in [{2}]({3}) being closed.", commitsText, commitsLink, issuesText, targetMilestone.HtmlUrl());
                 }
                 else
                 {
-                    stringBuilder.AppendFormat(@"As part of this release we had [{0}]({1}) closed.", issuesText, targetMilestone.HtmlUrl());
+                    message = string.Format(@"As part of this release we had [{0}]({1}) closed.", issuesText, targetMilestone.HtmlUrl());
                 }
             }
             else if (numberOfCommits > 0)
             {
                 var commitsLink = GetCommitsLink(previousMilestone);
                 var commitsText = String.Format(numberOfCommits == 1 ? "{0} commit" : "{0} commits", numberOfCommits);
-                stringBuilder.AppendFormat(@"As part of this release we had [{0}]({1}).", commitsText, commitsLink);
+                message = string.Format(@"As part of this release we had [{0}]({1}).", commitsText, commitsLink);
             }
-            stringBuilder.AppendLine();
+            
+            markdownBuilder.AppendLine(message);
+            xmlBuilder.Append("          ");
+            xmlBuilder.Append(
+                ConvertMarkdownToXml(message, m)
+            );
+            markdownBuilder.AppendLine(targetMilestone.Description);
+            markdownBuilder.AppendLine();
 
-            stringBuilder.AppendLine(targetMilestone.Description);
-            stringBuilder.AppendLine();
+            xmlBuilder.Append("          ");
+            xmlBuilder.Append(
+                ConvertMarkdownToXml(targetMilestone.Description, m)
+            );
 
-            AddIssues(stringBuilder, issues);
+            AddIssues(issues, m, markdownBuilder, xmlBuilder, milestoneTitle);
 
-            await AddFooter(stringBuilder);
+            try
+            {
+                await AddFooter(markdownBuilder, xmlBuilder);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error appending the footer: " + ex.Message);
+            }
 
-            return stringBuilder.ToString();
+            if (repository.Equals("sync_gateway"))
+            {
+                xmlBuilder.AppendLine("            </introduction>");
+                xmlBuilder.AppendLine("          </article>");
+            }
+            else
+            {
+                xmlBuilder.AppendLine  ("                    </body>");                
+                xmlBuilder.AppendLine("                </topic>"); 
+            }
+
+            return new Tuple<string,string>(markdownBuilder.ToString(), xmlBuilder.ToString());
+        }
+
+        static string ConvertMarkdownToXml(string message, Markdown m)
+        {
+            return m.Transform(message).Replace("<p>", "<paragraph>").Replace("</p>", "</paragraph>").Replace("<a ", "<external-ref ").Replace("</a>", "</external-ref>").Replace("<ul>", "<unordered-list>").Replace("</ul>", "</unordered-list>").Replace("<li>", "<list-item>").Replace("</li>", "</list-item>").Replace("<b>", "<strong>").Replace("</b>", "</strong>");
         }
 
         Milestone GetPreviousMilestone()
@@ -89,15 +141,15 @@ namespace ReleaseNotesCompiler
             return string.Format("https://github.com/{0}/{1}/compare/{2}...{3}", user, repository, previousMilestone.Title, targetMilestone.Title);
         }
 
-        void AddIssues(StringBuilder stringBuilder, List<Issue> issues)
+        static void AddIssues(IList<Issue> issues, Markdown m, StringBuilder stringBuilder, StringBuilder xmlBuilder, String version)
         {
-            Append(issues.Where(i => i.State == ItemState.Closed), "performance", "Performance Improvements", stringBuilder);
-            Append(issues.Where(i => i.State == ItemState.Closed), "enhancement", "Enhancements", stringBuilder);
-            Append(issues.Where(i => i.State == ItemState.Closed), "bug", "Bugs", stringBuilder);
-            Append(issues.Where(i => i.State == ItemState.Open), "known-issue", "Known Issues", stringBuilder);
+            Append(issues.Where(i => i.State == ItemState.Closed), "performance", "Performance Improvements", stringBuilder, xmlBuilder, m, version);
+            Append(issues.Where(i => i.State == ItemState.Closed), "enhancement", "Enhancements", stringBuilder, xmlBuilder, m, version);
+            Append(issues.Where(i => i.State == ItemState.Closed), "bug", "Bugs", stringBuilder, xmlBuilder, m, version);
+            Append(issues.Where(i => i.State == ItemState.Open), "known-issue", "Known Issues", stringBuilder, xmlBuilder, m, version);
         }
 
-        static async Task AddFooter(StringBuilder stringBuilder)
+        async Task AddFooter(StringBuilder stringBuilder, StringBuilder xmlBuilder)
         {
             var file = new FileInfo("footer.md");
 
@@ -110,12 +162,27 @@ namespace ReleaseNotesCompiler
             {
                 stringBuilder.Append(@"## Where to get it
 You can download this release from [Couchbase.com](http://www.couchbase.com/nosql-databases/downloads#Couchbase_Mobile)");
+            }
+            else 
+            {
+                using (var reader = file.OpenText())
+                {
+                    stringBuilder.Append(await reader.ReadToEndAsync());
+                }
+            }
+
+            var xmlFile = new FileInfo(String.Concat(repository, "-", "footer.xml"));
+
+            if (!xmlFile.Exists)
+            {
                 return;
             }
 
-            using (var reader = file.OpenText())
+            using (var reader = xmlFile.OpenText())
             {
-                stringBuilder.Append(await reader.ReadToEndAsync());
+                var footerTemplate = await reader.ReadToEndAsync();
+                var footer = String.Format(footerTemplate, milestoneTitle.Replace(".", String.Empty), this.milestoneTitle);
+                xmlBuilder.AppendLine(footer);
             }
         }
 
@@ -150,7 +217,7 @@ You can download this release from [Couchbase.com](http://www.couchbase.com/nosq
             return count > 0 && !issue.IsPullRequest();
         }
 
-        static void Append(IEnumerable<Issue> issues, string label, string pluralizedLabel, StringBuilder stringBuilder)
+        static void Append(IEnumerable<Issue> issues, string label, string pluralizedLabel, StringBuilder stringBuilder, StringBuilder xmlBuilder, Markdown m, string milestoneTitle)
         {
             var features = issues
                 .Where(x => x.Labels.Any(l => l.Name == label))
@@ -159,11 +226,25 @@ You can download this release from [Couchbase.com](http://www.couchbase.com/nosq
             {
                 stringBuilder.AppendFormat("__{0}__\r\n", pluralizedLabel);
 
+                xmlBuilder.AppendFormat("                <section id=\"{0}-{1}\">\n", milestoneTitle.Replace(".", String.Empty), pluralizedLabel);
+                xmlBuilder.AppendFormat("                    <title>{0}</title>\n", pluralizedLabel);
+                xmlBuilder.AppendLine  ("                    <body>");
+                xmlBuilder.AppendLine  ("                      <unordered-list>");
+
+                var issueText = String.Empty;
+
                 foreach (var issue in features)
                 {
-                    stringBuilder.AppendFormat("- [__#{0}__]({1}) {2}\r\n", issue.Number, issue.HtmlUrl, issue.Title.Capitalize());
+                    issueText = string.Format("- [__#{0}__]({1}) {2}\r\n", issue.Number, issue.HtmlUrl, issue.Title.Capitalize());
+                    stringBuilder.Append(issueText);
+                    xmlBuilder.AppendFormat("                          <list-item><external-ref href=\"{0}\"><strong>#{1}</strong></external-ref> {2}</list-item>\n", issue.HtmlUrl, issue.Number, m.Transform(issue.Title).Capitalize().Replace("<p>", String.Empty).Replace("</p>", String.Empty).Replace(Environment.NewLine, String.Empty));
                 }
+
                 stringBuilder.AppendLine();
+
+                xmlBuilder.AppendLine  ("                      </unordered-list>");
+                xmlBuilder.AppendLine  ("                    </body>");
+                xmlBuilder.AppendLine  ("                  </section>");
             }
         }
 

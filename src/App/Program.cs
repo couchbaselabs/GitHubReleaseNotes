@@ -42,6 +42,9 @@
 
         [Option('t', "targetcommitish", HelpText = "The commit to tag. Can be a branch or SHA. Defaults to repo's default branch.", Required = false)]
         public string TargetCommitish { get; set; }
+
+        [Option('x', "exportxml", HelpText = "Whether to generate the release notes in Couchbase Mobile's custom XML format. Saves to current work directory.", Required = false)]
+        public bool ExportXml { get; set; }
     }
 
     class AttachSubOptions : CommonSubOptions
@@ -61,6 +64,9 @@
 
         [Option('t', "targetcommitish", HelpText = "The commit to tag. Can be a branch or SHA. Defaults to repo's default branch.", Required = false)]
         public string TargetCommitish { get; set; }
+
+        [Option('x', "exportxml", HelpText = "Whether to generate the release notes in Couchbase Mobile's custom XML format. Saves to current work directory.", Required = false)]
+        public bool ExportXml { get; set; }
     }
 
     class Options
@@ -127,7 +133,7 @@
             {
                 var github = options.CreateGitHubClient();
 
-                await CreateRelease(github, options.RepositoryOwner, options.RepositoryName, options.Milestone, options.TargetCommitish, options.AssetPath);
+                await CreateRelease(github, options.RepositoryOwner, options.RepositoryName, options.Milestone, options.TargetCommitish, options.AssetPath, options.ExportXml);
 
                 return 0;
             }
@@ -169,7 +175,7 @@
             {
                 var github = options.CreateGitHubClient();
 
-                await UpdateRelease(github, options.RepositoryOwner, options.RepositoryName, options.Milestone, options.TargetCommitish, options.AssetPath);
+                await UpdateRelease(github, options.RepositoryOwner, options.RepositoryName, options.Milestone, options.TargetCommitish, options.AssetPath, options.ExportXml);
 
                 return 0;
             }
@@ -201,7 +207,7 @@
             }
         }
 
-        private static async Task UpdateRelease(GitHubClient github, string owner, string repository, string milestone, string targetCommitish, string asset)
+        private static async Task UpdateRelease(GitHubClient github, string owner, string repository, string milestone, string targetCommitish, string asset, bool exportXml)
         {
             var releases = await github.Release.GetAll(owner, repository);
 
@@ -212,7 +218,7 @@
             var result = await releaseNotesBuilder.BuildReleaseNotes();
 
             var releaseUpdate = currentRelease.ToUpdate();
-            releaseUpdate.Body = result;
+            releaseUpdate.Body = result.Item1;
 
             if (!string.IsNullOrEmpty(targetCommitish))
                 releaseUpdate.TargetCommitish = targetCommitish;
@@ -225,9 +231,14 @@
 
                 await github.Release.UploadAsset(release, upload);
             }
+
+            if (exportXml)
+            {
+                SaveReleaseNotesXml(repository, milestone, result.Item2);
+            }
         }
 
-        private static async Task CreateRelease(GitHubClient github, string owner, string repository, string milestone, string targetCommitish, string asset)
+        private static async Task CreateRelease(GitHubClient github, string owner, string repository, string milestone, string targetCommitish, string asset, bool exportXml)
         {
             var releaseNotesBuilder = new ReleaseNotesBuilder(new DefaultGitHubClient(github, owner, repository), owner, repository, milestone);
 
@@ -236,7 +247,7 @@
             var newRelease = new NewRelease(milestone)
                 {
                     Draft = true,
-                    Body = result,
+                    Body = result.Item1,
                     Name = milestone
                 };
             if (!string.IsNullOrEmpty(targetCommitish))
@@ -250,6 +261,16 @@
 
                 await github.Release.UploadAsset(release, upload);
             }
+
+            if (exportXml)
+            {
+                SaveReleaseNotesXml(repository, milestone, result.Item2);
+            }
+        }
+
+        static void SaveReleaseNotesXml(string repository, string milestone, string xmlString)
+        {
+            File.WriteAllText(String.Concat(repository, "-", milestone, ".xml"), xmlString);
         }
 
         private static async Task AttachToRelease(GitHubClient github, string owner, string repository, string milestone, string asset)
