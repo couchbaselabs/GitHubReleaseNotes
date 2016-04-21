@@ -24,7 +24,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Commandlineparameters>update --exportxml --owner couchbase --repository couchbase-lite-net --targetcommitish release/1.2.1 -u zgramana -p 7158edd61b2dd077d85be91c1a0c049b5ff80b59 -m 1.2.1</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
