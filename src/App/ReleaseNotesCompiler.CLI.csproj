@@ -58,7 +58,7 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="UpdateReleaseNotes.sh" />
+    <None Include="relnotes.sh" />
     <None Include="sync_gateway-footer.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
