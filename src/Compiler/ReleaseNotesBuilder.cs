@@ -172,11 +172,15 @@ You can download this release from [Couchbase.com](http://www.couchbase.com/nosq
             }
 
             var xmlFile = new FileInfo(String.Concat(repository, "-", "footer.xml"));
+            Console.Write("> Looking for a footer at {0}...", xmlFile.FullName);
 
             if (!xmlFile.Exists)
             {
+                Console.WriteLine("not found. Skipping.");
                 return;
             }
+
+            Console.Write("found. Appending...");
 
             using (var reader = xmlFile.OpenText())
             {
@@ -184,6 +188,8 @@ You can download this release from [Couchbase.com](http://www.couchbase.com/nosq
                 var footer = String.Format(footerTemplate, milestoneTitle.Replace(".", String.Empty), this.milestoneTitle);
                 xmlBuilder.AppendLine(footer);
             }
+
+            Console.Write("Done!");
         }
 
         void LoadMilestones()
